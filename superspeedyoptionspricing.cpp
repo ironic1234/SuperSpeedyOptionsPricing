@@ -5,6 +5,7 @@
 #include <fstream>
 #include <chrono>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -99,6 +100,27 @@ double put_rho(const double S, const double K, const double r, const double v, c
   return -T*K*exp(-r*T)*norm_cdf(-d_j(2, S, K, r, v, T));
 }
 
+int createfile(const double K, const double R, const double T, const double Sbottom, const double Stop, const double Sincrement, const double Vbottom, const double Vtop, const double Vincrement) {
+    ofstream file;
+    file.open(to_string(K) + ".csv", ios::app);
+    file << "Underlying,Strike,Riskfree,Volatility,Days to expiry,Price,Delta,Gamma,Vega,Theta,Rho\n";
+    for (double S = Sbottom; S <= Stop; S += Sincrement) {
+        for (double V = Vbottom; V <= Vtop; V += Vincrement) {
+            for (double x = 1; x<=T; x++) {
+                double call = call_price(S, K, R/100, V/100, x/365);
+                double calldelta = call_delta(S, K, R/100, V/100, x/365);
+                double callgamma = call_gamma(S, K, R/100, V/100, x/365);
+                double callvega = call_vega(S, K, R/100, V/100, x/365);
+                double calltheta = call_theta(S, K, R/100, V/100, x/365);
+                double callrho = call_rho(S, K, R/100, V/100, x/365);
+                file << S << "," << K << "," << R << "," << V << "," << x << "," << to_string(call) << "," << to_string(calldelta) << "," << to_string(callgamma) << "," << to_string(callvega) << "," << to_string(calltheta) << "," << to_string(callrho) << "\n";
+                
+            }
+        }
+    }
+    return 0;
+}
+
 int main(int argc, char **argv) {
 
     // First we create the parameter list
@@ -162,26 +184,15 @@ int main(int argc, char **argv) {
     double K = Kbottom;
     double V = Vbottom;
 
+    auto start = chrono::high_resolution_clock::now();
     // Then we calculate the call/put values
     for (K = Kbottom; K <= Ktop; K += Kincrement) {
-        ofstream file;
-        file.open(to_string(K) + ".csv", ios::app);
-        file << "Underlying,Strike,Riskfree,Volatility,Days to expiry,Price,Delta,Gamma,Vega,Theta,Rho\n";
-        for (S = Sbottom; S <= Stop; S += Sincrement) {
-            for (V = Vbottom; V <= Vtop; V += Vincrement) {
-                for (double x = 1; x<=T; x++) {
-                    double call = call_price(S, K, R/100, V/100, x/365);
-                    double calldelta = call_delta(S, K, R/100, V/100, x/365);
-                    double callgamma = call_gamma(S, K, R/100, V/100, x/365);
-                    double callvega = call_vega(S, K, R/100, V/100, x/365);
-                    double calltheta = call_theta(S, K, R/100, V/100, x/365);
-                    double callrho = call_rho(S, K, R/100, V/100, x/365);
-                    file << S << "," << K << "," << R << "," << V << "," << x << "," << to_string(call) << "," << to_string(calldelta) << "," << to_string(callgamma) << "," << to_string(callvega) << "," << to_string(calltheta) << "," << to_string(callrho) << "\n";
-                    
-                }
-            }
-        }
+        createfile(K,R,T,Sbottom,Stop,Sincrement,Vbottom,Vtop,Vincrement);
     }
+    auto stop = chrono::high_resolution_clock::now();
 
+    auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+
+    cout << duration.count() << " microseconds\n";
     return 0;
 }
