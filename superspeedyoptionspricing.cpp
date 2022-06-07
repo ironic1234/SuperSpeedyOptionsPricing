@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
     double T;    // One year until expiry
 
     string filey = "";
-    cout << "File?";
+    cout << "File? ";
     cin >> filey;
 
     if (filey == "no") {
