@@ -180,13 +180,9 @@ int main(int argc, char **argv) {
     cout << "Days to expiry: ";
     cin >> T;
     
-    double S = Sbottom;
-    double K = Kbottom;
-    double V = Vbottom;
-
     auto start = chrono::high_resolution_clock::now();
     // Then we calculate the call/put values
-    for (K = Kbottom; K <= Ktop; K += Kincrement) {
+    for (double K = Kbottom; K <= Ktop; K += Kincrement) {
         createfile(K,R,T,Sbottom,Stop,Sincrement,Vbottom,Vtop,Vincrement);
     }
     auto stop = chrono::high_resolution_clock::now();
